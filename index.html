@@ -5,13 +5,13 @@
 <title>Cozy Cabin Overlay</title>
 <style>
   :root {
-    --scale: calc(min(100vw / 1920, 100vh / 1080)); /* Auto scale for 1080p base */
+    --scale: calc(min(100vw / 1920, 100vh / 1080)); /* auto scale */
   }
 
   body {
     margin: 0;
     padding: 0;
-    background: transparent; /* ✅ no background */
+    background: transparent; /* transparent for OBS background */
     font-family: 'Cursive', sans-serif;
     color: white;
     overflow: hidden;
@@ -71,11 +71,11 @@
     to { opacity: 1; }
   }
 
-  /* Typing cursor animation */
   .typing {
     border-right: 2px solid rgba(255,255,255,0.75);
     animation: blink 1s infinite;
   }
+
   @keyframes blink {
     0%, 50% { border-color: rgba(255,255,255,0.75); }
     50.01%, 100% { border-color: transparent; }
@@ -95,7 +95,7 @@ const cities = [
   "Houston,US", "Phoenix,US", "Philadelphia,US",
   "San Antonio,US", "San Diego,US", "Dallas,US", "San Jose,US"
 ];
-const apiKey = "977e0ac225ca23e6103ba3d6910818f8"; // your API key
+const apiKey = "977e0ac225ca23e6103ba3d6910818f8"; // your OpenWeatherMap key
 
 function getWeatherEmoji(main) {
   const map = {
@@ -115,7 +115,7 @@ async function updateWeather() {
       if (data.cod !== 200) throw new Error(data.message);
       const emoji = getWeatherEmoji(data.weather[0].main);
       text += `${emoji} ${data.name}: ${Math.round(data.main.temp)}°F, ${data.weather[0].description}\n`;
-    } catch (e) {
+    } catch {
       text += `⚠️ ${city}: error\n`;
     }
   }
@@ -127,5 +127,52 @@ setInterval(updateWeather, 300000);
 /* === CLOCKS === */
 function updateUSClocks() {
   const now = new Date();
-  const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-  const t
+  const opts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  const zones = {
+    'Eastern': 'America/New_York',
+    'Central': 'America/Chicago',
+    'Mountain': 'America/Denver',
+    'Pacific': 'America/Los_Angeles',
+    'Alaska': 'America/Anchorage',
+    'Hawaii': 'Pacific/Honolulu'
+  };
+  let txt = '';
+  for (const [name, tz] of Object.entries(zones)) {
+    const time = now.toLocaleTimeString('en-US', { ...opts, timeZone: tz });
+    txt += `${name}: ${time}\n`;
+  }
+  document.getElementById('clock-container').innerText = txt.trim();
+}
+setInterval(updateUSClocks, 1000);
+updateUSClocks();
+
+/* === QUOTES === */
+const quotes = [
+  "Sipping tea by the fire… life is good.",
+  "Rainy days are perfect for music and blankets.",
+  "The world slows down in a cozy cabin.",
+  "A good book, soft music, and peace.",
+  "Warmth and calm in every corner.",
+  "Sometimes all you need is quiet and a cup of cocoa.",
+  "Stay awhile and rest your soul."
+];
+let qIndex = 0;
+const quoteDiv = document.getElementById('quote');
+
+function fadeQuote(text) {
+  quoteDiv.style.opacity = 0;
+  setTimeout(() => {
+    quoteDiv.innerText = text;
+    quoteDiv.style.opacity = 1;
+  }, 500);
+}
+
+function updateQuote() {
+  fadeQuote(quotes[qIndex]);
+  qIndex = (qIndex + 1) % quotes.length;
+}
+setInterval(updateQuote, 30000);
+updateQuote();
+</script>
+</body>
+</html>
