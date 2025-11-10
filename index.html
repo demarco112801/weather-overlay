@@ -1,71 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Cozy Weather Overlay</title>
+<title>Cozy Cabin Overlay</title>
 <style>
   body {
     margin: 0;
-    padding: 10px;
-    font-family: Arial, sans-serif;
-    background: transparent;
+    padding: 0;
+    background: url('https://i.imgur.com/3s5F9uS.jpg') no-repeat center center; /* replace with your cozy cabin image */
+    background-size: cover;
+    font-family: 'Cursive', sans-serif;
     color: white;
+    overflow: hidden;
   }
-  .city {
-    display: inline-block;
-    margin: 5px;
-    padding: 12px 18px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.5);
-    text-shadow: 1px 1px 3px black;
-    font-size: 22px;
+
+  /* WEATHER BOX */
+  #weather {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.4);
+    padding: 10px 15px;
+    border-radius: 10px;
+    text-shadow: 1px 1px 3px #000;
+    font-size: 28px;
+    white-space: pre-line;
+  }
+
+  /* CLOCK BOX */
+  #clock-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.4);
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-shadow: 1px 1px 3px #000;
+    font-size: 28px;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+
+  /* QUOTES BOX */
+  #quote {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.4);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 24px;
+    text-align: center;
+    max-width: 80%;
+    text-shadow: 1px 1px 3px #000;
   }
 </style>
 </head>
 <body>
-<div id="weather-container"></div>
+
+<div id="weather">Loading weather…</div>
+<div id="clock-container"></div>
+<div id="quote"></div>
 
 <script>
-const API_KEY = "977e0ac225ca23e6103ba3d6910818f8"; // your key
+/* === WEATHER WITH EMOJIS === */
 const cities = [
-  {name: "New York, US", lat: 40.7128, lon: -74.0060},
-  {name: "Los Angeles, US", lat: 34.0522, lon: -118.2437},
-  {name: "Chicago, US", lat: 41.8781, lon: -87.6298},
-  {name: "Houston, US", lat: 29.7604, lon: -95.3698},
-  {name: "Phoenix, US", lat: 33.4484, lon: -112.0740},
-  {name: "Philadelphia, US", lat: 39.9526, lon: -75.1652},
-  {name: "San Antonio, US", lat: 29.4241, lon: -98.4936},
-  {name: "San Diego, US", lat: 32.7157, lon: -117.1611},
-  {name: "Dallas, US", lat: 32.7767, lon: -96.7970},
-  {name: "San Jose, US", lat: 37.3382, lon: -121.8863}
+  "New York,US", "Los Angeles,US", "Chicago,US",
+  "Houston,US", "Phoenix,US", "Philadelphia,US",
+  "San Antonio,US", "San Diego,US", "Dallas,US", "San Jose,US"
 ];
+const apiKey = "YOUR_API_KEY_HERE"; // your OpenWeatherMap key
 
-const weatherEmoji = {
-  "Clear": "☀️", "Clouds": "☁️", "Rain": "🌧️", "Drizzle": "🌦️",
-  "Thunderstorm": "⛈️", "Snow": "❄️", "Mist": "🌫️", "Fog": "🌫️", "Haze": "🌫️"
-};
-
-async function updateWeather() {
-  const container = document.getElementById("weather-container");
-  container.innerHTML = "";
-  for (const city of cities) {
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&units=imperial&appid=${API_KEY}`);
-      const data = await res.json();
-      const temp = Math.round(data.main.temp);
-      const desc = data.weather[0].main;
-      const emoji = weatherEmoji[desc] || "";
-      container.innerHTML += `<div class="city">${emoji} ${city.name}: ${desc}, ${temp}°F</div>`;
-    } catch (e) {
-      container.innerHTML += `<div class="city">${city.name}: Error</div>`;
-    }
-  }
+function getWeatherEmoji(main) {
+  const map = {
+    "Clear": "☀️",
+    "Clouds": "☁️",
+    "Rain": "🌧️",
+    "Drizzle": "🌦️",
+    "Thunderstorm": "⛈️",
+    "Snow": "❄️",
+    "Mist": "🌫️",
+    "Fog": "🌫️",
+    "Smoke": "💨",
+    "Haze": "🌁",
+    "Dust": "🌪️",
+  };
+  return map[main] || "🌍";
 }
 
-// Initial load
+async function updateWeather() {
+  let text = '';
+  for (const city of cities) {
+    try {
+      const resp = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`);
+      const data = await resp.json();
+      const emoji = getWeatherEmoji(data.weather[0].main);
+      text += `${emoji} ${data.name}: ${Math.round(data.main.temp)}°F, ${data.weather[0].description}\n`;
+    } catch (e) {
+      text += `⚠️ ${city}: error\n`;
+    }
+  }
+  document.getElementById('weather').innerText = text;
+}
 updateWeather();
-// Update every 5 minutes
-setInterval(updateWeather, 300000);
+setInterval(updateWeather, 300000); // update every 5 minutes
+
+/* === U.S. CLOCKS === */
+function updateUSClocks() {
+  const now = new Date();
+  const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  const timezones = {
+    'Eastern': 'America/New_York',
+    'Central': 'America/Chicago',
+    'Mountain': 'America/Denver',
+    'Pacific': 'America/Los_Angeles',
+    'Alaska': 'America/Anchorage',
+    'Hawaii': 'Pacific/Honolulu'
+  };
+  let display = '';
+  for (const [name, tz] of Object.entries(timezones)) {
+    const time = now.toLocaleTimeString('en-US', { ...options, timeZone: tz });
+    display += `${name}: ${time}\n`;
+  }
+  document.getElementById('clock-container').innerText = display;
+}
+setInterval(updateUSClocks, 1000);
+updateUSClocks();
+
+/* === ROTATING QUOTES === */
+const quotes = [
+  "Sipping tea by the fire… life is good.",
+  "Rainy days are perfect for music and blankets.",
+  "The world slows down in a cozy cabin.",
+  "A good book, soft music, and peace.",
+  "Warmth and calm in every corner.",
+  "Sometimes all you need is quiet and a cup of cocoa.",
+  "Stay awhile and rest your soul."
+];
+let qIndex = 0;
+function updateQuote() {
+  document.getElementById('quote').innerText = quotes[qIndex];
+  qIndex = (qIndex + 1) % quotes.length;
+}
+setInterval(updateQuote, 30000);
+updateQuote();
 </script>
+
 </body>
 </html>
