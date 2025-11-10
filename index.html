@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cozy Weather Overlay</title>
+<style>
+  body {
+    margin: 0;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    background: transparent;
+    color: white;
+  }
+  .city {
+    display: inline-block;
+    margin: 5px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 3px black;
+    font-size: 22px;
+  }
+</style>
+</head>
+<body>
+<div id="weather-container"></div>
+
+<script>
+const API_KEY = "977e0ac225ca23e6103ba3d6910818f8"; // your key
+const cities = [
+  {name: "New York, US", lat: 40.7128, lon: -74.0060},
+  {name: "Los Angeles, US", lat: 34.0522, lon: -118.2437},
+  {name: "Chicago, US", lat: 41.8781, lon: -87.6298},
+  {name: "Houston, US", lat: 29.7604, lon: -95.3698},
+  {name: "Phoenix, US", lat: 33.4484, lon: -112.0740},
+  {name: "Philadelphia, US", lat: 39.9526, lon: -75.1652},
+  {name: "San Antonio, US", lat: 29.4241, lon: -98.4936},
+  {name: "San Diego, US", lat: 32.7157, lon: -117.1611},
+  {name: "Dallas, US", lat: 32.7767, lon: -96.7970},
+  {name: "San Jose, US", lat: 37.3382, lon: -121.8863}
+];
+
+const weatherEmoji = {
+  "Clear": "☀️", "Clouds": "☁️", "Rain": "🌧️", "Drizzle": "🌦️",
+  "Thunderstorm": "⛈️", "Snow": "❄️", "Mist": "🌫️", "Fog": "🌫️", "Haze": "🌫️"
+};
+
+async function updateWeather() {
+  const container = document.getElementById("weather-container");
+  container.innerHTML = "";
+  for (const city of cities) {
+    try {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&units=imperial&appid=${API_KEY}`);
+      const data = await res.json();
+      const temp = Math.round(data.main.temp);
+      const desc = data.weather[0].main;
+      const emoji = weatherEmoji[desc] || "";
+      container.innerHTML += `<div class="city">${emoji} ${city.name}: ${desc}, ${temp}°F</div>`;
+    } catch (e) {
+      container.innerHTML += `<div class="city">${city.name}: Error</div>`;
+    }
+  }
+}
+
+// Initial load
+updateWeather();
+// Update every 5 minutes
+setInterval(updateWeather, 300000);
+</script>
+</body>
+</html>
