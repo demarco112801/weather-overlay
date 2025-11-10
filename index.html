@@ -4,21 +4,30 @@
 <meta charset="UTF-8">
 <title>Cozy Cabin Overlay</title>
 <style>
- body {
+  :root {
+    --scale: calc(min(100vw / 1920, 100vh / 1080)); /* auto scale for 1080p base */
+  }
+
+  body {
     margin: 0;
     padding: 0;
-    background: url('https://www.pexels.com/video/house-covered-in-snow-6650294/') no-repeat center center;
+    background: url('https://i.imgur.com/3s5F9uS.jpg') no-repeat center center;
     background-size: cover;
     font-family: 'Cursive', sans-serif;
     color: white;
     overflow: hidden;
+    transform-origin: top left;
+    transform: scale(var(--scale));
+    width: 1920px;
+    height: 1080px;
   }
+
   /* WEATHER */
   #weather {
     position: absolute;
     top: 20px;
     left: 30px;
-    max-width: 400px; /* prevents overlapping */
+    max-width: 400px;
     background: rgba(0,0,0,0.4);
     padding: 12px 18px;
     border-radius: 12px;
@@ -32,7 +41,7 @@
   #clock-container {
     position: absolute;
     top: 20px;
-    right: 30px; /* pushed in more */
+    right: 30px;
     background: rgba(0,0,0,0.4);
     padding: 15px 25px;
     border-radius: 12px;
@@ -63,11 +72,12 @@
     to { opacity: 1; }
   }
 
-  /* optional subtle typing effect */
+  /* Optional subtle typing effect */
   .typing {
     border-right: 2px solid rgba(255,255,255,0.75);
     animation: blink 1s infinite;
   }
+
   @keyframes blink {
     0%, 50% { border-color: rgba(255,255,255,0.75); }
     50.01%, 100% { border-color: transparent; }
@@ -87,7 +97,7 @@ const cities = [
   "Houston,US", "Phoenix,US", "Philadelphia,US",
   "San Antonio,US", "San Diego,US", "Dallas,US", "San Jose,US"
 ];
-const apiKey = "977e0ac225ca23e6103ba3d6910818f8";
+const apiKey = "977e0ac225ca23e6103ba3d6910818f8"; // your API key here
 
 function getWeatherEmoji(main) {
   const map = {
@@ -104,13 +114,14 @@ async function updateWeather() {
     try {
       const resp = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${apiKey}`);
       const data = await resp.json();
+      if (data.cod !== 200) throw new Error(data.message);
       const emoji = getWeatherEmoji(data.weather[0].main);
       text += `${emoji} ${data.name}: ${Math.round(data.main.temp)}°F, ${data.weather[0].description}\n`;
     } catch (e) {
       text += `⚠️ ${city}: error\n`;
     }
   }
-  document.getElementById('weather').innerText = text;
+  document.getElementById('weather').innerText = text.trim();
 }
 updateWeather();
 setInterval(updateWeather, 300000);
@@ -132,12 +143,12 @@ function updateUSClocks() {
     const time = now.toLocaleTimeString('en-US', { ...options, timeZone: tz });
     display += `${name}: ${time}\n`;
   }
-  document.getElementById('clock-container').innerText = display;
+  document.getElementById('clock-container').innerText = display.trim();
 }
 setInterval(updateUSClocks, 1000);
 updateUSClocks();
 
-/* === COZY QUOTES (with fade animation) === */
+/* === COZY QUOTES === */
 const quotes = [
   "Sipping tea by the fire… life is good.",
   "Rainy days are perfect for music and blankets.",
