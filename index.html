@@ -7,53 +7,71 @@
   body {
     margin: 0;
     padding: 0;
-    background: url('https://i.imgur.com/3s5F9uS.jpg') no-repeat center center; /* replace with your cozy cabin image */
+    background: url('https://i.imgur.com/3s5F9uS.jpg') no-repeat center center;
     background-size: cover;
     font-family: 'Cursive', sans-serif;
     color: white;
     overflow: hidden;
   }
 
-  /* WEATHER BOX */
+  /* WEATHER */
   #weather {
     position: absolute;
     top: 20px;
-    left: 20px;
+    left: 30px;
+    max-width: 400px; /* prevents overlapping */
     background: rgba(0,0,0,0.4);
-    padding: 10px 15px;
-    border-radius: 10px;
+    padding: 12px 18px;
+    border-radius: 12px;
     text-shadow: 1px 1px 3px #000;
-    font-size: 28px;
+    font-size: 26px;
+    line-height: 1.4;
     white-space: pre-line;
   }
 
-  /* CLOCK BOX */
+  /* CLOCKS */
   #clock-container {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 30px; /* pushed in more */
     background: rgba(0,0,0,0.4);
-    padding: 15px 20px;
-    border-radius: 10px;
+    padding: 15px 25px;
+    border-radius: 12px;
     text-shadow: 1px 1px 3px #000;
-    font-size: 28px;
+    font-size: 26px;
     line-height: 1.5;
     white-space: pre-line;
   }
 
-  /* QUOTES BOX */
+  /* QUOTES */
   #quote {
     position: absolute;
-    bottom: 20px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.4);
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 24px;
+    background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(40,40,40,0.6));
+    padding: 15px 30px;
+    border-radius: 20px;
+    font-size: 26px;
     text-align: center;
     max-width: 80%;
     text-shadow: 1px 1px 3px #000;
+    opacity: 0;
+    animation: fadeIn 2s forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* optional subtle typing effect */
+  .typing {
+    border-right: 2px solid rgba(255,255,255,0.75);
+    animation: blink 1s infinite;
+  }
+  @keyframes blink {
+    0%, 50% { border-color: rgba(255,255,255,0.75); }
+    50.01%, 100% { border-color: transparent; }
   }
 </style>
 </head>
@@ -61,7 +79,7 @@
 
 <div id="weather">Loading weather…</div>
 <div id="clock-container"></div>
-<div id="quote"></div>
+<div id="quote" class="typing"></div>
 
 <script>
 /* === WEATHER WITH EMOJIS === */
@@ -70,21 +88,13 @@ const cities = [
   "Houston,US", "Phoenix,US", "Philadelphia,US",
   "San Antonio,US", "San Diego,US", "Dallas,US", "San Jose,US"
 ];
-const apiKey = "977e0ac225ca23e6103ba3d6910818f8"; // your OpenWeatherMap key
+const apiKey = "YOUR_API_KEY_HERE";
 
 function getWeatherEmoji(main) {
   const map = {
-    "Clear": "☀️",
-    "Clouds": "☁️",
-    "Rain": "🌧️",
-    "Drizzle": "🌦️",
-    "Thunderstorm": "⛈️",
-    "Snow": "❄️",
-    "Mist": "🌫️",
-    "Fog": "🌫️",
-    "Smoke": "💨",
-    "Haze": "🌁",
-    "Dust": "🌪️",
+    "Clear": "☀️", "Clouds": "☁️", "Rain": "🌧️", "Drizzle": "🌦️",
+    "Thunderstorm": "⛈️", "Snow": "❄️", "Mist": "🌫️", "Fog": "🌫️",
+    "Smoke": "💨", "Haze": "🌁", "Dust": "🌪️"
   };
   return map[main] || "🌍";
 }
@@ -104,9 +114,9 @@ async function updateWeather() {
   document.getElementById('weather').innerText = text;
 }
 updateWeather();
-setInterval(updateWeather, 300000); // update every 5 minutes
+setInterval(updateWeather, 300000);
 
-/* === U.S. CLOCKS === */
+/* === CLOCKS === */
 function updateUSClocks() {
   const now = new Date();
   const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
@@ -128,7 +138,7 @@ function updateUSClocks() {
 setInterval(updateUSClocks, 1000);
 updateUSClocks();
 
-/* === ROTATING QUOTES === */
+/* === COZY QUOTES (with fade animation) === */
 const quotes = [
   "Sipping tea by the fire… life is good.",
   "Rainy days are perfect for music and blankets.",
@@ -139,13 +149,22 @@ const quotes = [
   "Stay awhile and rest your soul."
 ];
 let qIndex = 0;
+const quoteDiv = document.getElementById('quote');
+
+function fadeQuote(text) {
+  quoteDiv.style.opacity = 0;
+  setTimeout(() => {
+    quoteDiv.innerText = text;
+    quoteDiv.style.opacity = 1;
+  }, 500);
+}
+
 function updateQuote() {
-  document.getElementById('quote').innerText = quotes[qIndex];
+  fadeQuote(quotes[qIndex]);
   qIndex = (qIndex + 1) % quotes.length;
 }
 setInterval(updateQuote, 30000);
 updateQuote();
 </script>
-
 </body>
 </html>
